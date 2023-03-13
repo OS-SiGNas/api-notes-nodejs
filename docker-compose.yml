@@ -1,0 +1,9 @@
+version: '3.4'
+
+service:
+  api:
+    build:
+      context: .
+      target: production
+    ports:
+      - 8080:3334

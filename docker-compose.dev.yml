@@ -1,0 +1,14 @@
+version: '3.4'
+
+service:
+  api:
+    build:
+      context: .
+      target: development
+    restart: always
+    volumes:
+      - ./:/app
+      - ./app/node_modules
+    ports:
+      - 3000:3334
+    command: npm run dev
