@@ -34,8 +34,9 @@ export default class NotesController {
   };
 
   postNote = async (req: Request, res: Response): Promise<Response> => {
+    const authorId = req.headers.userId as string;
     try {
-      const newNote = await this.#service.createNote(req.body);
+      const newNote = await this.#service.createNote({ ...req.body, authorId });
       return this.#response.created(res, newNote);
     } catch (error) {
       return this.#response.error(res, error);

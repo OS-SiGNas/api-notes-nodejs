@@ -26,7 +26,6 @@ export class NotesSchema {
     this.createNoteSchema = z.object({
       body: z
         .object({
-          authorId: z.string().length(24, 'id must be a 24 hex characters'),
           title: z.string(),
           description: z.string().optional(),
           content: z.string(),
