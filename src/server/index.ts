@@ -1,68 +1,22 @@
-import Express from 'express';
+import Express, { json } from 'express';
+import dotenv from 'dotenv';
 import morgan from 'morgan';
 import cors from 'cors';
-import { config } from './config';
-import { mongo } from './mongo';
+import mongoose from 'mongoose';
+
+import Server from './Server';
+import Settings from './Settings';
+import Mongo from './Mongo';
 import modules from '../modules';
 
-// types
-import type { Application } from 'express';
-import type { Modules } from '../modules/types';
-import type { IServer, IConfig, DatabaseHandler } from './types';
-interface Dependences {
-  config: IConfig;
-  mongo: DatabaseHandler;
-  modules: Modules;
-}
+import type { RequestHandler } from 'express';
 
-class Server implements IServer {
-  readonly #app: Application;
-  readonly #port: number;
-  readonly #mongo: DatabaseHandler;
-  readonly #environment: string;
-  constructor({ config, mongo, modules }: Dependences) {
-    this.#app = Express();
-    this.#port = config.port;
-    this.#mongo = mongo;
-    this.#environment = config.environment;
+dotenv.config();
 
-    // init main method
-    this.#init(modules);
-  }
+export const { apiSaludo, dbUri, environment, jwtSecretKey, port, testUserData } = new Settings(process.env);
 
-  #startGlobalMidlewares = (): void => {
-    this.#app
-      .use(this.#environment === 'dev' ? morgan('dev') : morgan('common'))
-      .use(Express.json())
-      .use(cors());
-  };
+const mongo = new Mongo(mongoose, dbUri);
 
-  #init = (modules: Modules): void => {
-    this.#startGlobalMidlewares();
-    this.#app.use(modules);
-  };
+const middlewares: RequestHandler[] = [environment === 'dev' ? morgan('dev') : morgan('common'), json(), cors()];
 
-  public run = async (): Promise<void> => {
-    this.#app.listen(this.#port, (): void => {
-      const message = (): string => {
-        if (this.#environment === 'dev') return '👽 DEV MODE 👽';
-        if (this.#environment === 'test') return '🕵️  TEST MODE 🪲';
-        return '🔥 ON 🔥';
-      };
-      console.info(`\x1b[33m${message()}\x1b[0m\nSERVER running on: http://localhost:${this.#port}`);
-    });
-
-    try {
-      await this.#mongo.connect();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  public get app(): Application | undefined {
-    if (this.#environment === 'test') return this.#app;
-    return undefined;
-  }
-} // <- end
-
-export const server = new Server({ config, mongo, modules });
+export const server = new Server({ app: Express(), environment, port, mongo, middlewares, modules });

@@ -1,6 +1,6 @@
 import req from 'supertest';
 import app from '../../index';
-import { config } from '../../server/config';
+import { testUserData } from '../../server';
 
 const headers = { Authorization: '' };
 let userTestId = '';
@@ -29,7 +29,7 @@ describe('Testing Notes enpoints', () => {
   describe('Check Session and Roles in /notes', () => {
     test('Only users registered with rol "user" can access to the endpoints', async () => {
       // get userTest token for test
-      const userTest = await req(app).post('/auth').send(config.testUserData);
+      const userTest = await req(app).post('/auth').send(testUserData);
       headers.Authorization = `Bearer ${String(userTest?.body?.data?.token)}`;
       userTestId = userTest?.body?.data?._id;
 

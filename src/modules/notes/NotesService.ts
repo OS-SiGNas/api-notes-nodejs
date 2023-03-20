@@ -1,13 +1,5 @@
 import type { NotesModel } from './NotesModel';
-import type { INote, INotesService } from './types';
-
-// interface GetNotesParams {
-// authorId: string;
-// title?: string;
-// description?: string;
-// content?: string;
-// createAt?: Date;
-// }
+import type { INote, INotesService, FindNotesParams, GetNoteParams } from './types';
 
 export default class NotesService implements INotesService {
   readonly #model: typeof NotesModel;
@@ -15,11 +7,11 @@ export default class NotesService implements INotesService {
     this.#model = model;
   }
 
-  getNoteById = async (_id: string): Promise<INote | null> => {
-    return await this.#model.findById(_id);
+  getNoteById = async ({ _id, authorId }: GetNoteParams): Promise<INote | null> => {
+    return await this.#model.findOne({ _id, authorId });
   };
 
-  getNotesByAuthorId = async (toFind: { authorId: string }): Promise<INote[]> => {
+  findAllNotes = async (toFind: FindNotesParams): Promise<INote[]> => {
     return await this.#model.find(toFind);
   };
 
@@ -28,11 +20,11 @@ export default class NotesService implements INotesService {
     return await newNote.save();
   };
 
-  updateNoteById = async (_id: string, note: INote): Promise<INote | null> => {
-    return await this.#model.findByIdAndUpdate(_id, note, { new: true });
+  updateNoteById = async ({ _id, authorId }: GetNoteParams, note: INote): Promise<INote | null> => {
+    return await this.#model.findOneAndUpdate({ _id, authorId }, note, { new: true });
   };
 
-  deleteNoteById = async (_id: string): Promise<INote | null> => {
-    return await this.#model.findByIdAndDelete(_id);
+  deleteNoteById = async ({ _id, authorId }: GetNoteParams): Promise<INote | null> => {
+    return await this.#model.findOneAndDelete({ _id, authorId });
   };
 }

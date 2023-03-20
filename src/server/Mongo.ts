@@ -1,49 +1,48 @@
-import mongoose from 'mongoose';
-import { config } from './config';
+import type { Mongoose } from 'mongoose';
 import type { DatabaseHandler } from './types';
 
-class Mongo implements DatabaseHandler {
+export default class Mongo implements DatabaseHandler {
   #uri: string;
-  constructor(uri: string) {
+  #mongoose: Mongoose;
+  constructor(mongoose: Mongoose, uri: string) {
+    this.#mongoose = mongoose;
+    this.#mongoose.set('strictQuery', false);
     this.#uri = uri;
     this.#events();
   }
 
   connect = async (): Promise<void> => {
-    mongoose.set('strictQuery', false);
-    await mongoose.connect(this.#uri);
+    await this.#mongoose.connect(this.#uri);
   };
 
   #events = (): void => {
-    mongoose.connection.on('connecting', this.#isConnecting);
-    mongoose.connection.on('connected', this.#isConnected);
-    mongoose.connection.on('reconnected', this.#isReconnected);
-    mongoose.connection.on('close', this.#isClose);
-    mongoose.connection.on('error', this.#isError);
+    this.#mongoose.connection.on('connecting', this.#connecting);
+    this.#mongoose.connection.on('connected', this.#connected);
+    this.#mongoose.connection.on('reconnected', this.#reconnected);
+    this.#mongoose.connection.on('close', this.#close);
+    this.#mongoose.connection.on('error', this.#error);
   };
 
-  #isConnected = (): void => {
-    console.log('==> Mongo cluster connected');
+  #connected = (): void => {
+    console.log('Mongo ==> Cluster connected');
   };
 
-  #isConnecting = (): void => {
-    console.log('==> Connecting to mongo cluster...');
+  #connecting = (): void => {
+    console.log('Mongo ==> Connecting to cluster...');
   };
 
-  #isReconnected = (): void => {
-    console.log('==> Reconnected to mongo cluster...');
+  #reconnected = (): void => {
+    console.log('Mongo ==> Reconnected to cluster...');
   };
 
-  #isError = (): void => {
-    console.log('==> Connection error');
+  #error = (): void => {
+    console.log('Mongo ==> Connection error');
   };
 
-  #isClose = (): void => {
-    console.log('==> Mongo connection is closed ');
+  #close = (): void => {
+    console.log('Mongo ==> connection is closed ');
   };
 }
-
-export const mongo = new Mongo(config.dbUri);
 
 /*
 connecting: Emitted when Mongoose starts making its initial connection to the MongoDB server

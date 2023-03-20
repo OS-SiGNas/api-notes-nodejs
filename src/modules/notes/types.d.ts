@@ -7,10 +7,20 @@ export interface INote {
   authorId: Types.ObjectId;
 }
 
+export interface GetNoteParams {
+  _id: string;
+  authorId?: string;
+}
+
+export interface FindNotesParams {
+  authorId?: string;
+  query?: string;
+}
+
 export interface INotesService {
-  getNoteById: (_id: string) => Promise<INote | null>;
-  getNotesByAuthorId: ({ authorId, query }: { authorId: string; query?: string }) => Promise<INote[]>;
+  getNoteById: (arg: GetNoteParams) => Promise<INote | null>;
+  findAllNotes: (arg: FindNotesParams) => Promise<INote[]>;
   createNote: (note: INote) => Promise<INote>;
-  updateNoteById: (_id: string, note: INote) => Promise<INote | null>;
-  deleteNoteById: (_id: string) => Promise<INote | null>;
+  updateNoteById: (arg: GetNoteParams, note: INote) => Promise<INote | null>;
+  deleteNoteById: (arg: GetNoteParams) => Promise<INote | null>;
 }

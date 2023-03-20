@@ -9,6 +9,11 @@ class NotFound {
 
     this.router
       .get('/', this.#noEndpoint)
+      .post('/', this.#noEndpoint)
+      .put('/', this.#noEndpoint)
+      .patch('/', this.#noEndpoint)
+      .delete('/', this.#noEndpoint)
+      .options('/', this.#noEndpoint)
 
       .get('*', this.#noEndpoint)
       .post('*', this.#noEndpoint)

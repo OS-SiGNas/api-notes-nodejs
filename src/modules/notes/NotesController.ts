@@ -12,8 +12,9 @@ export default class NotesController {
 
   getNote = async (req: Request, res: Response): Promise<Response> => {
     const { _id } = req.params;
+    const authorId = req.headers.userId as string;
     try {
-      const note = await this.#service.getNoteById(_id);
+      const note = await this.#service.getNoteById({ _id, authorId });
       if (note === null) return this.#response.notFound(res);
       return this.#response.ok(res, note);
     } catch (error) {
@@ -25,7 +26,7 @@ export default class NotesController {
     const authorId = req.headers.userId as string;
     const toFind = { authorId, ...req.query };
     try {
-      const notes = await this.#service.getNotesByAuthorId(toFind);
+      const notes = await this.#service.findAllNotes(toFind);
       if (notes === null) return this.#response.notFound(res);
       return this.#response.ok(res, notes);
     } catch (error) {
@@ -45,8 +46,9 @@ export default class NotesController {
 
   putNote = async (req: Request, res: Response): Promise<Response> => {
     const { _id } = req.params;
+    const authorId = req.headers.userId as string;
     try {
-      const note = await this.#service.updateNoteById(_id, req.body);
+      const note = await this.#service.updateNoteById({ _id, authorId }, req.body);
       if (note === null) return this.#response.notFound(res);
       return this.#response.ok(res, note);
     } catch (error) {
@@ -56,8 +58,9 @@ export default class NotesController {
 
   deleteNote = async (req: Request, res: Response): Promise<Response> => {
     const { _id } = req.params;
+    const authorId = req.headers.userId as string;
     try {
-      const note = await this.#service.deleteNoteById(_id);
+      const note = await this.#service.deleteNoteById({ _id, authorId });
       if (note === null) return this.#response.notFound(res);
       return this.#response.ok(res, 'Deleted');
     } catch (error) {
