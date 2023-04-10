@@ -153,4 +153,5 @@ this.#router.use('/users', checkSession('admin'))
 const { checkSession } = new UsersMiddleware({ httpResponse, verifyJwt });
 
 // create instance like this, look in src/modules/users/index.ts for good example
+//
 ```
