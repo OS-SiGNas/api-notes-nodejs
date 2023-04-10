@@ -1,96 +1,108 @@
-import type { Response } from 'express';
+import { environment } from '../../server/Settings';
 
-export default class HttpResponse {
-  readonly #OK: number = 200;
-  readonly #CREATED: number = 201;
-  readonly #BAD_REQUEST: number = 400;
-  readonly #NOT_FOUND: number = 404;
-  readonly #UNAUTHORIZED: number = 401;
-  readonly #FORBIDDEN: number = 403;
-  readonly #INTERNAL_SERVER_ERROR: number = 500;
+import type { Response } from 'express';
+import type { Environment } from '../../server/types';
+
+interface Status {
+  status: number;
+  message: string;
+}
+
+interface Pagination {
+  offset: number;
+  limit: number;
+}
+
+export class HttpResponse {
+  readonly #OK: Status = { status: 200, message: 'Success 👌' };
+  readonly #CREATED: Status = { status: 201, message: 'Created 👌' };
+  readonly #BAD_REQUEST: Status = { status: 400, message: 'Bad Request 🤦' };
+  readonly #UNAUTHORIZED: Status = { status: 401, message: 'Unauthorized 🤖🔒' };
+  // readonly #PAYMENT_REQUIRED: Status = { status: 402, message: 'Payment Required 🤌💳' };
+  readonly #FORBIDDEN: Status = { status: 403, message: '🔒 Forbidden 🔒' };
+  readonly #NOT_FOUND: Status = { status: 404, message: 'Resourse Not Found 😕' };
+  // readonly #GONE: Status = { status: 410, message: 'Access to the target resource is no longer available' };
+  readonly #UNPROCESABLE: Status = { status: 422, message: 'Unprocessable Content 😕 please fix and try again' };
+  // readonly #LEGAL_UNAVAILABLE: Status = { status: 451, message: 'Unavailable For Legal Reasons' };
+  readonly #INTERNAL_SERVER_ERROR: Status = { status: 500, message: 'Internal Server Error 🚑' };
+  readonly #UNAVAILABLE: Status = { status: 503, message: 'Service Unavailable ⏳ try later' };
+  // readonly #TIMEOUT: Status = {status:504, message:'Gateway Timeout ⌛'}
   readonly #debug: boolean;
-  constructor(debug: boolean) {
-    this.#debug = debug;
+  constructor(env: Environment) {
+    this.#debug = env === 'dev';
   }
 
-  #logger = (data: unknown): void => {
+  readonly #logger = (data: unknown): void => {
     if (this.#debug && data !== undefined) {
       console.log('======================  🕵️ logger  ======================');
-      console.log(data);
+      console.trace(data);
       console.log('====================== end logger ======================');
     }
   };
 
-  ok = (res: Response, data?: unknown): Response => {
+  /** Use this method for status Ok:200 */
+  public ok = (res: Response, data?: object, pagination?: Pagination): Response => {
     this.#logger(data);
-    return res.status(this.#OK).json({
-      status: this.#OK,
-      statusMsg: 'Success 👌',
-      data,
-    });
+    const { status, message } = this.#OK;
+    return res.status(status).json({ status, message, pagination, data });
   };
 
-  created = (res: Response, data?: unknown): Response => {
+  /** Use this method for status Created:201 */
+  public created = (res: Response, data?: object): Response => {
     this.#logger(data);
-    return res.status(this.#CREATED).json({
-      status: this.#CREATED,
-      statusMsg: 'Created 👌',
-      data,
-    });
+    res.status(201);
+    return res.json({ ...this.#CREATED, data });
   };
 
-  badRequest = (res: Response, error?: unknown): Response => {
+  /** Use this method for status Bad Request:400 */
+  public badRequest = (res: Response, error?: object | string): Response => {
     this.#logger(error);
-    return res.status(this.#BAD_REQUEST).json({
-      status: this.#BAD_REQUEST,
-      statusMsg: 'Bad Request 🤦',
-      error,
-    });
+    res.status(400);
+    return res.json({ ...this.#BAD_REQUEST, error });
   };
 
-  notFound = (res: Response, error?: unknown): Response => {
+  /** Use this method for status Unauthorized:401 */
+  public unauthorized = (res: Response, error?: string): Response => {
     this.#logger(error);
-    return res.status(this.#NOT_FOUND).json({
-      status: this.#NOT_FOUND,
-      statusMsg: 'Resourse Not Found 😕',
-      error,
-    });
+    res.status(401);
+    return res.json({ ...this.#UNAUTHORIZED, error });
   };
 
-  unauthorized = (res: Response, error?: unknown): Response => {
+  /** Use this method for status Forbidden:403 */
+  public forbidden = (res: Response, error?: object | string): Response => {
     this.#logger(error);
-    return res.status(this.#UNAUTHORIZED).json({
-      status: this.#UNAUTHORIZED,
-      statusMsg: 'Unauthorized 🤖🔒',
-      error,
-    });
+    res.status(403);
+    return res.json({ ...this.#FORBIDDEN, error });
   };
 
-  forbidden = (res: Response, error?: unknown): Response => {
+  /** Use this method for status notFound:404 */
+  public notFound = (res: Response, error?: string): Response => {
     this.#logger(error);
-    return res.status(this.#FORBIDDEN).json({
-      status: this.#FORBIDDEN,
-      statusMsg: '🔒 Forbidden 🔒',
-      error,
-    });
+    res.status(404);
+    return res.json({ ...this.#NOT_FOUND, error });
   };
 
-  error = (res: Response, error?: any): Response => {
+  /** Use this method for status Unprocessable Content:422 */
+  public unprocessable = (res: Response, error: object): Response => {
     this.#logger(error);
-    if (typeof error.status === 'number' || typeof error.statusCode === 'number') {
-      res.status(error.status ?? error.statusCode);
-      return res.json({
-        status: res.status,
-        errorType: error?.name,
-        errorMsg: error?.message,
-      });
-    } else {
-      res.status(this.#INTERNAL_SERVER_ERROR);
-      return res.json({
-        status: res.status,
-        errorMsg: 'Internal Server Error 🚑',
-        errorType: error?.name,
-      });
+    const { status, message } = this.#UNPROCESABLE;
+    return res.status(status).json({ status, message, error });
+  };
+
+  /** Use this method for handling errors status:500+ */
+  public error = (res: Response, error: unknown): Response => {
+    this.#logger(error);
+    const { status, message } = this.#INTERNAL_SERVER_ERROR;
+    if (error instanceof Error) {
+      if (error.name === 'MongoServerError') {
+        const { status, message } = this.#UNAVAILABLE;
+        return res
+          .status(status)
+          .json({ status, message, error: 'this error will be reported and corrected as soon as possible' });
+      }
     }
+    return res.status(status).json({ status, message, error: String(error) });
   };
 }
+
+export default new HttpResponse(environment);

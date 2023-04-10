@@ -1,6 +1,6 @@
 import req from 'supertest';
 import app from '../../index';
-import { testUserData } from '../../server';
+import { testUserData } from '../../server/Settings';
 
 const headers = { Authorization: '' };
 let userTestId = '';

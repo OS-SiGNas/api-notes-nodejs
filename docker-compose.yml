@@ -1,9 +1,17 @@
 version: '3.4'
 
-service:
+services:
   api:
     build:
       context: .
       target: production
     ports:
-      - 8080:3334
+      - 3334:3000
+    environment:
+      JWT_SECRET: LosChimiChimitos
+      PORT: 3000
+      API_SALUDO: http://localhost:5555/hola/
+      MONGO_URI_HEADER: mongodb+srv://signas13:wyENLJGUgCyjb4BV@
+      MONGO_CLUSTER: cluster0.a1cig.mongodb.net/test?retryWrites=true&w=majority
+      USER_TEST_USERNAME: test
+      USER_TEST_PASSWORD: 1111111111

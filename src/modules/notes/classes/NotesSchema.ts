@@ -17,6 +17,8 @@ export class NotesSchema {
     this.getNotesSchema = z.object({
       query: z
         .object({
+          offset: z.string().min(1).max(2).optional(),
+          limit: z.string().min(1).max(2).optional(),
           title: z.string().optional(),
           createdAt: z.date().optional(),
         })

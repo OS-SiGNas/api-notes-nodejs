@@ -1,10 +1,9 @@
 import { prop, getModelForClass } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
-import { compare, genSalt, hash } from 'bcryptjs';
 
-import type { Rol, IUser } from './types';
+import type { Rol, IUser } from '../types';
 
-export class User implements IUser {
+class User implements IUser {
   // =>
   @prop({ auto: true })
   _id: Types.ObjectId;
@@ -29,15 +28,7 @@ export class User implements IUser {
 
   @prop({ type: String, required: true, default: [] })
   roles: Types.Array<Rol>;
-
-  public static encryptPassword = async (password: string): Promise<string> => {
-    const salt = await genSalt(10);
-    return await hash(password, salt);
-  };
-
-  public static comparePassword = async (password: string, receivedPassword: string): Promise<boolean> => {
-    return await compare(password, receivedPassword);
-  };
 }
 
-export const UsersModel = getModelForClass(User);
+const UsersModel = getModelForClass(User);
+export default UsersModel;

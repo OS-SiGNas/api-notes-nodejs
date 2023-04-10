@@ -1,8 +1,8 @@
 import { prop, getModelForClass } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
-import type { INote } from './types';
+import type { INote } from '../types';
 
-export class Note implements INote {
+class Note implements INote {
   @prop({ auto: true })
   _id: Types.ObjectId;
 
@@ -22,4 +22,5 @@ export class Note implements INote {
   authorId: Types.ObjectId;
 }
 
-export const NotesModel = getModelForClass(Note);
+const NotesModel = getModelForClass(Note);
+export default NotesModel;

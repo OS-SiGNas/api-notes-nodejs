@@ -1,7 +1,12 @@
+import dotenv from 'dotenv';
+
+import type { SignOptions } from 'jsonwebtoken';
 import type { Environment, ISettings } from './types';
 
-export default class Settings implements ISettings {
-  readonly #environment: string | undefined;
+dotenv.config();
+
+class Settings implements ISettings {
+  readonly #environment: Environment | undefined;
   readonly #port: string | undefined;
   readonly #mongoUriHeader: string | undefined;
   readonly #mongoCluster: string | undefined;
@@ -10,7 +15,8 @@ export default class Settings implements ISettings {
   readonly #usernameTestUser: string | undefined;
   readonly #passwordTestUser: string | undefined;
   constructor(env: NodeJS.ProcessEnv) {
-    this.#environment = env.NODE_ENV;
+    // console.log('===============config===============')
+    this.#environment = env.NODE_ENV as Environment | undefined;
     this.#port = env.PORT;
     this.#mongoUriHeader = env.MONGO_URI_HEADER;
     this.#mongoCluster = env.MONGO_CLUSTER;
@@ -22,10 +28,7 @@ export default class Settings implements ISettings {
 
   get environment(): Environment {
     if (this.#environment === undefined) throw new Error('NODE_ENV is undefined');
-    if (this.#environment === 'dev') return 'dev';
-    if (this.#environment === 'test') return 'test';
-    if (this.#environment === 'prod') return 'prod';
-    throw new Error('only values dev|test|prod in NODE_ENV');
+    return this.#environment;
   }
 
   get port(): number {
@@ -40,16 +43,25 @@ export default class Settings implements ISettings {
   }
 
   get jwtSecretKey(): string {
-    if (this.#secretKey === undefined) throw new Error('undefined JWT_SECRET key in .env');
+    if (this.#secretKey === undefined) throw new Error('undefined JWT_SECRET in .env');
     return this.#secretKey;
   }
 
+  get jwtSignOptions(): SignOptions {
+    return {
+      expiresIn: 3600,
+    };
+  }
+
+  /**
+   * any example api for test */
   get apiSaludo(): string {
     if (this.#apiSaludo === undefined) throw new Error('undefined API_SALUDO in .env');
     return this.#apiSaludo;
   }
 
   get testUserData(): { username: string; password: string } | undefined {
+    // if (this.#environment !== 'test') throw new Error('testUserData is only available in test mode');
     if (this.#environment !== 'test') return undefined;
     if (this.#usernameTestUser === undefined) throw new Error('undefined USER_TEST_USERNAME in .env');
     if (this.#passwordTestUser === undefined) throw new Error('undefined USER_TEST_PASSWORD in .env');
@@ -59,3 +71,7 @@ export default class Settings implements ISettings {
     };
   }
 }
+
+export const { environment, port, dbUri, jwtSecretKey, jwtSignOptions, apiSaludo, testUserData } = new Settings(
+  process.env
+);

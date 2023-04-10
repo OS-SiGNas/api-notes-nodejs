@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import type HttpResponse from '../shared/HttpResponse';
+import type { HttpResponse } from '../../shared/HttpResponse';
 import type NotesService from './NotesService';
 
 export default class NotesController {
@@ -24,11 +24,11 @@ export default class NotesController {
 
   getNotes = async (req: Request, res: Response): Promise<Response> => {
     const authorId = req.headers.userId as string;
-    const toFind = { authorId, ...req.query };
+    console.log('authorId => ', authorId);
     try {
-      const notes = await this.#service.findAllNotes(toFind);
+      const { pagination, notes } = await this.#service.findAllNotes({ authorId, ...req.query });
       if (notes === null) return this.#response.notFound(res);
-      return this.#response.ok(res, notes);
+      return this.#response.ok(res, notes, pagination);
     } catch (error) {
       return this.#response.error(res, error);
     }
@@ -62,14 +62,14 @@ export default class NotesController {
     try {
       const note = await this.#service.deleteNoteById({ _id, authorId });
       if (note === null) return this.#response.notFound(res);
-      return this.#response.ok(res, 'Deleted');
+      return res.sendStatus(204);
     } catch (error) {
       return this.#response.error(res, error);
     }
   };
 
   // only for checkSession test
-  testReturn200 = (_req: Request, res: Response): void => {
-    res.sendStatus(200);
+  testReturn204 = (_req: Request, res: Response): void => {
+    res.sendStatus(204);
   };
 }

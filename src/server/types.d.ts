@@ -1,3 +1,5 @@
+import type { SignOptions } from 'jsonwebtoken';
+
 export interface IServer {
   run: () => Promise<void>;
 }
@@ -8,6 +10,7 @@ export interface ISettings {
   port: number;
   dbUri: string;
   jwtSecretKey: string;
+  jwtSignOptions: SignOptions;
   apiSaludo: string;
   testUserData: { username: string; password: string } | undefined;
 }

@@ -10,7 +10,7 @@ RUN npm i
 
 COPY . .
 
-EXPOSE 3334
+EXPOSE 3000
 
 CMD ["npm","run", "dev"]
 
@@ -27,6 +27,7 @@ RUN npm i -g npm
 RUN npm update 
 RUN npm ci --only=production
 
-COPY --from=dev /app/bin ./bin 
+# COPY --from=development /app/bin ./bin 
+COPY ./bin ./bin
 
 CMD ["node","bin/index.js"]

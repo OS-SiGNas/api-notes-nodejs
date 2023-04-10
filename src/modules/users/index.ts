@@ -1,21 +1,21 @@
-import UsersRouter from './UsersRouter';
-import UsersController from './UsersController';
-import UsersService from './UsersService';
-import AuthSerice from './AuthService';
-import UsersMiddleware from './UsersMiddleware';
-import { UsersModel } from './UsersModel';
-import { usersSchema } from './UsersSchema';
-import ValidatorMiddleware from '../shared/SchemaValidatorMiddleware';
-import HttpResponse from '../shared/HttpResponse';
-import { environment, jwtSecretKey } from '../../server/';
+import { Router } from 'express';
 
-const httpResponse = new HttpResponse(environment === 'dev');
-const service = new UsersService(UsersModel);
-const { generateJwt, verifyJwt } = new AuthSerice(jwtSecretKey);
+import UsersRouter from './classes/UsersRouter';
+import UsersController from './classes/UsersController';
+import UsersService from './classes/UsersService';
+import AuthSerice from './classes/AuthService';
+import AuthMiddleware from './classes/AuthMiddleware';
+import model from './classes/UsersModel';
+import { usersSchema } from './classes/UsersSchema';
+import SchemaValidatorMiddleware from '../shared/SchemaValidatorMiddleware';
+import { jwtSecretKey, jwtSignOptions } from '../../server/Settings';
+import httpResponse from '../shared/HttpResponse';
+
+const { generateJwt, verifyJwt, comparePassword, encryptPassword } = new AuthSerice(jwtSecretKey, jwtSignOptions);
+export const { checkSession } = new AuthMiddleware(httpResponse, verifyJwt);
+const { schemaValidator } = new SchemaValidatorMiddleware(httpResponse);
+const service = new UsersService({ model, comparePassword, encryptPassword });
 const controller = new UsersController({ httpResponse, service, generateJwt });
-const { checkSession } = new UsersMiddleware({ httpResponse, verifyJwt });
-const { schemaValidator } = new ValidatorMiddleware(httpResponse);
 
-// Module User
-export default new UsersRouter({ controller, checkSession, schemaValidator, usersSchema }).router;
-
+// Module User Router
+export default new UsersRouter({ router: Router(), controller, checkSession, schemaValidator, usersSchema }).router;

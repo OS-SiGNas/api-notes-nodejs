@@ -6,7 +6,7 @@ import type { IServer } from './server/types';
   void server.run();
 })(server);
 
-/*  If environment is different than 'test'
-    server.app will return undefined
-*/
-export default server.app;
+/**
+ * If environment is different than 'test'
+ * server.app will return undefined 
+export default server.app; */

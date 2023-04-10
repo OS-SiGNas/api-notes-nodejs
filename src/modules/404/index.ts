@@ -3,11 +3,11 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 
 class NotFound {
-  router: Router;
-  constructor() {
-    this.router = Router();
+  #router: Router;
+  constructor(router: Router) {
+    this.#router = router;
 
-    this.router
+    this.#router
       .get('/', this.#noEndpoint)
       .post('/', this.#noEndpoint)
       .put('/', this.#noEndpoint)
@@ -29,6 +29,10 @@ class NotFound {
   #noEndpoint = (_req: Request, res: Response): Response => {
     return res.sendStatus(404);
   };
+
+  get router(): Router {
+    return this.#router;
+  }
 }
 
-export default new NotFound().router;
+export default new NotFound(Router()).router;

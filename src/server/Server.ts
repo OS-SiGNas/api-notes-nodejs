@@ -1,7 +1,12 @@
 import type { Application, RequestHandler } from 'express';
-
 import type { IServer, Environment, DatabaseHandler } from './types';
 import type { Modules } from '../modules/types';
+
+interface HttpServer {
+  close: () => void;
+  address: () => unknown;
+}
+
 interface Dependences {
   app: Application;
   port: number;
@@ -16,6 +21,7 @@ export default class Server implements IServer {
   readonly #port: number;
   readonly #mongo: DatabaseHandler;
   readonly #environment: string;
+  #httpServer: HttpServer;
   constructor({ app, port, environment, mongo, middlewares, modules }: Dependences) {
     this.#environment = environment;
     this.#app = app;
@@ -27,10 +33,11 @@ export default class Server implements IServer {
   }
 
   public run = async (): Promise<void> => {
+    this.#httpServer = this.#app.listen(this.#port);
+    const { port } = this.#httpServer.address() as { port: number };
+    console.info(`\x1b[33m${this.#message()}\x1b[0m\nSERVER running on: http://localhost:${port}`);
     try {
       await this.#mongo.connect();
-      const { port } = this.#app.listen(this.#port).address() as { port: number };
-      console.info(`\x1b[33m${this.#message()}\x1b[0m\nSERVER running on: http://localhost:${port}`);
     } catch (error) {
       console.error(error);
     }
@@ -42,8 +49,15 @@ export default class Server implements IServer {
     return '🔥 ON 🔥';
   };
 
+  /**
+   * test getters
   public get app(): Application | undefined {
     if (this.#environment !== 'test') return undefined;
     return this.#app;
   }
+
+  public get httpServer(): HttpServer | undefined {
+    if (this.#environment !== 'test') return undefined;
+    return this.#httpServer;
+  } */
 }
